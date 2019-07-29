@@ -1,0 +1,135 @@
+
+// Event handler
+var $rootScope;
+(function() {
+
+    var slice             = [].slice,
+        uid               = ['0', '0', '0'];
+
+    function nextUid() {
+        var index = uid.length;
+        var digit;
+
+        while(index) {
+            index--;
+            digit = uid[index].charCodeAt(0);
+            if (digit == 57) {
+                uid[index] = 'A';
+                return uid.join('');
+            }
+            if (digit == 90) {
+                uid[index] = '0';
+            } else {
+                uid[index] = String.fromCharCode(digit + 1);
+                return uid.join('');
+            }
+        }
+        uid.unshift('0');
+        return uid.join('');
+    };
+
+    function concat(array1, array2, index) {
+        return array1.concat(slice.call(array2, index));
+    };
+
+    function decrementListenerCount(current, count, name) {
+        do {
+            current.$$listenerCount[name] -= count;
+            if (current.$$listenerCount[name] === 0) {
+                delete current.$$listenerCount[name];
+            }
+        } while ((current = current.$parent));
+    };
+
+    function Scope() {
+        this.$id = nextUid();
+        this.$$phase = this.$parent = this.$$watchers =
+            this.$$nextSibling = this.$$prevSibling =
+                this.$$childHead = this.$$childTail = null;
+        this['this'] = this.$root =  this;
+        this.$$destroyed = false;
+        this.$$asyncQueue = [];
+        this.$$postDigestQueue = [];
+        this.$$listeners = {};
+        this.$$listenerCount = {};
+        this.$$isolateBindings = {};
+    }
+
+    Scope.prototype = {
+        constructor: Scope,
+        $broadcast: function(name, args) {
+            var target = this,
+                current = target,
+                next = target,
+                event = {
+                    name: name,
+                    targetScope: target,
+                    preventDefault: function() {
+                        event.defaultPrevented = true;
+                    },
+                    defaultPrevented: false
+                },
+                listenerArgs = concat([event], arguments, 1),
+                listeners, i, length;
+
+            // down while you can, then up and next sibling or up and next sibling until back at root
+            while ((current = next)) {
+                event.currentScope = current;
+                listeners = current.$$listeners[name] || [];
+                for (i=0, length = listeners.length; i<length; i++) {
+                    // if listeners were deregistered, defragment the array
+                    if (!listeners[i]) {
+                        listeners.splice(i, 1);
+                        i--;
+                        length--;
+                        continue;
+                    }
+
+                    try {
+                        listeners[i].apply(null, listenerArgs);
+                    } catch(e) {
+                        //$exceptionHandler(e);
+                    }
+                }
+
+                // Insanity Warning: scope depth-first traversal
+                if (!(next = ((current.$$listenerCount[name] && current.$$childHead) ||
+                    (current !== target && current.$$nextSibling)))) {
+                    while(current !== target && !(next = current.$$nextSibling)) {
+                        current = current.$parent;
+                    }
+                }
+            }
+
+            return event;
+        },
+        $on: function(name, listener) {
+            var namedListeners = this.$$listeners[name];
+            if (!namedListeners) {
+                this.$$listeners[name] = namedListeners = [];
+            }
+            namedListeners.push(listener);
+
+            var current = this;
+            do {
+                if (!current.$$listenerCount[name]) {
+                    current.$$listenerCount[name] = 0;
+                }
+                current.$$listenerCount[name]++;
+            } while ((current = current.$parent));
+
+            var self = this;
+            return function() {
+                namedListeners[indexOf(namedListeners, listener)] = null;
+                decrementListenerCount(self, 1, name);
+            };
+        }
+
+    }
+
+    //app.$rootScope = new Scope();
+    $rootScope = new Scope();
+
+})();
+//var $rootScope = app.$rootScope;
+

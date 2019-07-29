@@ -51,6 +51,24 @@ git push origin master
 
 
 
+
+
+
+…or create a new repository on the command line
+echo "# untitled1" >> README.md
+
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/basil79/untitled1.git
+git push -u origin master
+
+
+…or push an existing repository from the command line
+git remote add origin https://github.com/basil79/untitled1.git
+git push -u origin master
+
+
 -_Notes_-
 __Notes__
 **Notes**

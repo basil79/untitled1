@@ -13,6 +13,7 @@ var Modiz = require('./modiz');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+
 var logger = require('morgan');
 
 
@@ -168,9 +169,57 @@ console.log(unique2);
 
 var arrLeft = [1, 2, 3];
 var arrRight = [...arrLeft, 4, 5, 6];
+
+
+// ...spread
+// var arr3 = [...arr1, ...arr2];
 console.log(arrRight);
 
+console.log("-----------------------");
 
+var arr5 = [0,1,2,3,4,5,6,7,8,9];
+for(var i = arr5.length; i--;) {
+  console.log(arr5[i]);
+}
+
+console.log("-----------------------");
+
+var h = arr5.length; // or 10
+while(h--) {
+  console.log(h);
+}
+
+console.log("-----------------------");
+
+var set1 = new Set([1,2,3]);
+var set2 = new Set([1,3,2]);
+
+console.log(set1.size);
+console.log(set1.has(1));
+
+/*
+var isSetsEqual = function(a, b) {
+  var isEqual = false;
+  if(a.size == b.size) {
+    var out = [...a].every(function(value) {
+      return b.has(value);
+    });
+    console.log('out', out);
+  }
+  return isEqual;
+}
+*/
+
+
+function isSetsEqual(a, b) {
+  if(a.size !== b.size) return false;
+  for(var c of a) {
+    if(!b.has(c)) return false;
+  }
+  return true;
+}
+
+console.log('is sets equal', isSetsEqual(set1, set2));
 
 console.log("-----------------------");
 

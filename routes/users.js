@@ -104,9 +104,29 @@ res.sendStatus()	Set the response status code and send its string representation
   res.cookie('rememberme', '1', { expires: new Date(Date.now() + 900000), httpOnly: true });
    */
 
-  res.json({
-    user_id : userId
-  });
+
+
+
+
+  console.log(req.body.name != undefined);
+
+  if(req.body.name != undefined) {
+
+    res
+        .status(200)
+        .json({
+          user_id : userId,
+          name : req.body.name
+        });
+
+  } else {
+
+    res
+        .status(500)
+        .end();
+
+  }
+
 
 });
 
